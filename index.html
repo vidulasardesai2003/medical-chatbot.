@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Assistance Chatbot</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #001f3f, #007bff, #00c6ff);
+            flex-direction: column;
+            position: relative;
+        }
+        .doctor-animation {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .doctor-animation img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .chat-container {
+            width: 450px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        h2 {
+            color: #ffffff;
+            font-size: 30px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        .chat-box {
+            height: 320px;
+            width: 100%;
+            overflow-y: auto;
+            border: 3px solid #ffffff;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: left;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .input-box {
+            display: flex;
+            width: 100%;
+            margin-top: 15px;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #0056b3;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus {
+            border-color: #003d7a;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.6);
+        }
+        button {
+            padding: 12px;
+            background: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 86, 179, 0.4);
+        }
+        button:hover {
+            background: #003d7a;
+        }
+        .message {
+            background: #cce5ff;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            font-size: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .user-message {
+            background: #99ccff;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="doctor-animation">
+        <img src="https://cdn4.iconfinder.com/data/icons/medical-flat-sticker-icons-part-1/202/Doctor-1024.png" alt="Doctor Illustration">
+    </div>
+    <h2>🩺 Medical Chatbot</h2>
+    <div class="chat-container">
+        <div class="chat-box" id="chatBox"></div>
+        <button onclick="startDiagnosis()">Start Diagnosis</button>
+        <div class="input-box">
+            <input type="text" id="userInput" placeholder="Type your answer here...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <script>
+        let userSymptoms = [];
+        let questionIndex = 0;
+        let questions = [
+            "Do you have a fever? (yes/no)",
+            "Are you experiencing body pain? (yes/no)",
+            "Do you have a cough or cold? (yes/no)",
+            "Do you feel weak or fatigued? (yes/no)",
+            "Do you have headaches? (yes/no)",
+            "Do you have rashes on your body? (yes/no)",
+            "Are you experiencing nausea or vomiting? (yes/no)"
+        ];
+
+        let diseases = {
+            "Dengue": ["yes", "yes", "no", "yes", "yes", "yes", "no"],
+            "Malaria": ["yes", "yes", "no", "yes", "yes", "no", "yes"],
+            "Viral Fever": ["yes", "yes", "yes", "yes", "yes", "no", "no"],
+            "Common Cold": ["no", "no", "yes", "yes", "no", "no", "no"]
+        };
+
+        let treatments = {
+            "Dengue": "Drink plenty of fluids, take Paracetamol, and get adequate rest.",
+            "Malaria": "Take antimalarial drugs like Chloroquine or Artemisinin-based therapy.",
+            "Viral Fever": "Stay hydrated, take Acetaminophen for fever, and rest well.",
+            "Common Cold": "Use decongestants, antihistamines, and drink warm fluids."
+        };
+
+        function appendMessage(message, isUser = false) {
+            const chatBox = document.getElementById("chatBox");
+            const msgElement = document.createElement("p");
+            msgElement.classList.add("message");
+            if (isUser) msgElement.classList.add("user-message");
+            msgElement.innerText = message;
+            chatBox.appendChild(msgElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function startDiagnosis() {
+            questionIndex = 0;
+            userSymptoms = [];
+            appendMessage("Bot: " + questions[questionIndex]);
+        }
+
+        function sendMessage() {
+            let userInput = document.getElementById("userInput").value.toLowerCase().trim();
+            if (userInput !== "yes" && userInput !== "no") {
+                appendMessage("Bot: Please answer with 'yes' or 'no'.");
+                return;
+            }
+            appendMessage("You: " + userInput, true);
+            userSymptoms.push(userInput);
+            questionIndex++;
+            if (questionIndex < questions.length) {
+                setTimeout(() => appendMessage("Bot: " + questions[questionIndex]), 1000);
+            } else {
+                setTimeout(diagnoseDisease, 1000);
+            }
+            document.getElementById("userInput").value = "";
+        }
+
+        function diagnoseDisease() {
+            let bestMatch = "Unknown Condition";
+            let highestMatch = 0;
+            for (let disease in diseases) {
+                let matchCount = diseases[disease].filter((symptom, index) => symptom === userSymptoms[index]).length;
+                if (matchCount > highestMatch) {
+                    highestMatch = matchCount;
+                    bestMatch = disease;
+                }
+            }
+            appendMessage(`Bot: You may have ${bestMatch}. Recommended treatment: ${treatments[bestMatch] || "Consult a doctor."}`);
+        }
+    </script>
+</body>
+</html>
